@@ -7,7 +7,7 @@
 #    By: maurodri <maurodri@student.42sp...>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/01/13 22:11:06 by maurodri          #+#    #+#              #
-#    Updated: 2024/01/14 23:14:40 by maurodri         ###   ########.fr        #
+#    Updated: 2024/01/15 19:53:12 by maurodri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -81,9 +81,20 @@ log_cpu_load() {
       | tr , .
 }
 
+log_lvm_usage() {
+	local is_lvm_used=''
+	if [[ $(lsblk --list --output type | grep -c lvm) -gt 0 ]]; then
+		is_lvm_used='yes'
+	else
+		is_lvm_used='no'
+	fi
+	echo "LVM use: $is_lvm_used"
+}
+
 log_architecture
 log_num_physical_processors
 log_num_logical_processors
 log_memory_ram_usage
 log_hard_disk_usage
 log_cpu_load
+log_lvm_usage
