@@ -7,7 +7,7 @@
 #    By: maurodri <maurodri@student.42sp...>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/01/13 22:11:06 by maurodri          #+#    #+#              #
-#    Updated: 2024/01/15 20:05:57 by maurodri         ###   ########.fr        #
+#    Updated: 2024/01/16 21:43:38 by maurodri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -98,6 +98,14 @@ log_lvm_usage() {
 	echo "LVM use: $is_lvm_used"
 }
 
+log_tcp_connections() {
+	echo "Connections TCP : $(ss -t | grep -c 'ESTAB') ESTABLISHED"
+}
+
+log_active_users() {
+	echo "User log: $(w --no-header | cut -d ' ' -f 1 | sort -u | wc -l)"
+}
+
 log_architecture
 log_num_physical_processors
 log_num_logical_processors
@@ -106,4 +114,5 @@ log_hard_disk_usage
 log_cpu_load
 log_system_boot
 log_lvm_usage
-
+log_tcp_connections
+log_active_users
