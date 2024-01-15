@@ -7,7 +7,7 @@
 #    By: maurodri <maurodri@student.42sp...>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/01/13 22:11:06 by maurodri          #+#    #+#              #
-#    Updated: 2024/01/14 23:14:40 by maurodri         ###   ########.fr        #
+#    Updated: 2024/01/15 18:44:58 by maurodri         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -81,9 +81,17 @@ log_cpu_load() {
       | tr , .
 }
 
+log_system_boot() {
+	# reference
+	# https://www.cyberciti.biz/tips/linux-last-reboot-time-and-date-find-out.html
+	who -b \
+	| awk '{ print "Last boot:",$3,$4}'
+}
+
 log_architecture
 log_num_physical_processors
 log_num_logical_processors
 log_memory_ram_usage
 log_hard_disk_usage
 log_cpu_load
+log_system_boot
