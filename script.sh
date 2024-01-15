@@ -40,17 +40,29 @@ log_architecture() {
 }
 
 log_num_physical_processors() {
-	echo -e "CPU physical: $(lscpu -e=socket | awk '$1 ~ /[0-9]+/ { print $1 }' | sort -u | wc -l)"
+    # basing number on number on unique cores-socket pair
+    # based on reading
+    # https://www.howtogeek.com/194756/cpu-basics-multiple-cpus-cores-and-hyper-threading-explained/
+    echo -e "CPU physical:"\
+	 "$(lscpu -e=core,socket | sort -u | grep [0-9] -c)"
 }
 
 log_num_logical_processors() {
-	echo -e $"vCPU: $(lscpu -e=cpu | awk '$1 ~ /[0-9]+/ { print $1 }' | wc -l)"
+    echo -e "vCPU:"\
+	 "$(lscpu -e=cpu | grep [0-9] -c)"
 }
 
+log_memory_ram_usage() {
+    free --mega \
+	| awk '/Mem/ { total=$2; used=$3; percent=used/total*100 }
+	       END { printf "Memory usage: %s/%s (%.2f%%)\n",
+	       	     	    	    	   used, total, percent }'
+}
 
 log_architecture
 log_num_physical_processors
 log_num_logical_processors
+log_memory_ram_usage
 
 
 
