@@ -53,16 +53,31 @@ log_num_logical_processors() {
 }
 
 log_memory_ram_usage() {
+    # reference https://vitux.com/how-to-check-installed-ram-on-debian/
     free --mega \
 	| awk '/Mem/ { total=$2; used=$3; percent=used/total*100 }
 	       END { printf "Memory usage: %s/%s (%.2f%%)\n",
 	       	     	    	    	   used, total, percent }'
 }
 
+log_hard_disk_usage() {
+    # reference https://www.tomshardware.com/how-to/check-disk-usage-linux
+    df --total --block-size=GB \
+	| awk '/total/ {
+	           gsub(/GB/, "", $3);
+	  	   total=$2; used=$3; percent=$5
+	       }
+	       END {
+	           printf "Disk Usage: %s/%s (%s)\n",
+		   	  used, total, percent
+	       }'
+}
+
 log_architecture
 log_num_physical_processors
 log_num_logical_processors
 log_memory_ram_usage
+log_hard_disk_usage
 
 
 
