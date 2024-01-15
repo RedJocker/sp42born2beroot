@@ -73,11 +73,17 @@ log_hard_disk_usage() {
 	       }'
 }
 
+log_cpu_load() {
+    top -b -n1 \
+      | awk 'NR==3 {
+	       printf "CPU load: %.2f%%\n", 100-$8
+	     }'\
+      | tr , .
+}
+
 log_architecture
 log_num_physical_processors
 log_num_logical_processors
 log_memory_ram_usage
 log_hard_disk_usage
-
-
-
+log_cpu_load
