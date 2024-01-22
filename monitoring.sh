@@ -1,0 +1,122 @@
+#!/bin/bash
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    monitoring.sh                                      :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: maurodri <maurodri@student.42sp...>        +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/01/22 00:55:14 by maurodri          #+#    #+#              #
+#    Updated: 2024/01/22 01:04:49 by maurodri         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+log_architecture() {
+	echo -e "Architecture: $(uname -a)"
+}
+
+log_num_physical_processors() {
+    # basing number on number on unique cores-socket pair
+    # based on reading
+    # https://www.howtogeek.com/194756/cpu-basics-multiple-cpus-cores-and-hyper-threading-explained/
+    echo -e "CPU physical: "\
+	 "$(lscpu -e=core,socket | sort -u | grep [0-9] -c)"
+}
+
+log_num_logical_processors() {
+    echo -e "vCPU:"\
+	 "$(lscpu -e=cpu | grep [0-9] -c)"
+}
+
+log_memory_ram_usage() {
+    # reference https://vitux.com/how-to-check-installed-ram-on-debian/
+    free --mega \
+	| awk '/Mem/ { total=$2; used=$3; percent=used/total*100 }
+	       END { printf "Memory usage: %s/%s (%.2f%%)\n",
+	       	     	    	    	   used, total, percent }'
+}
+
+log_hard_disk_usage() {
+    # reference https://www.tomshardware.com/how-to/check-disk-usage-linux
+    df --total --block-size=GB \
+	| awk '/total/ {
+	           gsub(/GB/, "", $3);
+	  	   total=$2; used=$3; percent=$5
+	       }
+	       END {
+	           printf "Disk Usage: %s/%s (%s)\n",
+		   	  used, total, percent
+	       }'
+}
+
+log_cpu_load() {
+    top -b -n1 \
+      | awk 'NR==3 {
+	       printf "CPU load: %.2f%%\n", 100-$8
+	     }'\
+      | tr , .
+}
+
+log_system_boot() {
+	# reference
+	# https://www.cyberciti.biz/tips/linux-last-reboot-time-and-date-find-out.html
+	who -b \
+		| awk '{ print "Last boot:",$3,$4}'
+}
+
+log_lvm_usage() {
+	local is_lvm_used=''
+	if [[ $(lsblk --list --output type | grep -c lvm) -gt 0 ]]; then
+		is_lvm_used='yes'
+	else
+		is_lvm_used='no'
+	fi
+	echo "LVM use: $is_lvm_used"
+}
+
+log_tcp_connections() {
+	echo "Connections TCP: $(ss -t | grep -c 'ESTAB') ESTABLISHED"
+}
+
+log_active_users() {
+	# reference https://linuxhandbook.com/linux-logged-in-users/
+	echo "User log: "\
+		 "$(w --no-header | cut -d ' ' -f 1 | sort -u | wc -l)"
+}
+
+log_network_address() {
+	local ip=$(hostname -I)
+	local mac=$(ip -o link  | grep 'state UP' \
+					        | grep link/ether \
+							| cut -d '\' -f 2 \
+							| awk '{ print $2 }')
+	echo "Network: IP $(hostname -I) ($mac)"
+}
+
+log_sudo_count() {
+	echo "Sudo: "\
+		 "$(journalctl _COMM=sudo | grep COMMAND | wc -l) cmd"
+}
+
+log_all_system_info() {
+	log_architecture
+	log_num_physical_processors
+	log_num_logical_processors
+	log_memory_ram_usage
+	log_hard_disk_usage
+	log_cpu_load
+	log_system_boot
+	log_lvm_usage
+	log_tcp_connections
+	log_active_users
+	log_network_address
+	log_sudo_count
+}
+
+broadcast() {
+	sleep $((10 * 60))
+	wall "$(log_all_system_info)"
+	broadcast		
+}
+
+broadcast
